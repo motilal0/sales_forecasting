@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.arima.model import ARIMA
+from sklearn.linear_model import LinearRegression
 
 # Streamlit app title
 st.title("Correlation & Forecasting")
@@ -282,8 +283,6 @@ if uploaded_file:
         best_fig = fig_arimax if best_model == "ARIMAX" else fig_sarimax
 
         # Calculate the trend line using linear regression
-        from sklearn.linear_model import LinearRegression
-
         # Prepare data for trend line
         historical_dates = (df_preprocessed.index - df_preprocessed.index.min()).days.values.reshape(-1, 1)
         historical_sales = df_preprocessed['sales'].values
