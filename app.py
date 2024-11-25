@@ -281,6 +281,25 @@ if uploaded_file:
         best_forecast = forecast_arimax if best_model == "ARIMAX" else forecast_sarimax
         best_fig = fig_arimax if best_model == "ARIMAX" else fig_sarimax
 
+        # Calculate the trend line using linear regression
+        from sklearn.linear_model import LinearRegression
+
+        # Prepare data for trend line
+        historical_dates = (df_preprocessed.index - df_preprocessed.index.min()).days.values.reshape(-1, 1)
+        historical_sales = df_preprocessed['sales'].values
+
+        # Fit a linear regression model
+        trend_model = LinearRegression()
+        trend_model.fit(historical_dates, historical_sales)
+
+        # Generate trend line values for historical and forecasted dates
+        all_dates = pd.concat([pd.Series(df_preprocessed.index), pd.Series(forecast_dates)])
+        all_days = (all_dates - df_preprocessed.index.min()).dt.days.values.reshape(-1, 1)
+        trend_values_all = trend_model.predict(all_days)
+
+        # Add trend line to the best model figure
+        best_fig.add_trace(go.Scatter(x=all_dates, y=trend_values_all, mode='lines', name='Trend Line', line=dict(color='green', dash='dash')))
+
         # Display the best model's details
         st.markdown(f"<h3 style='text-align: center; font-weight: bold; text-decoration: underline;'>Best Model Selected: {best_model}</h3>", unsafe_allow_html=True)
         st.write(f"Best Model: {best_model}")
@@ -299,8 +318,7 @@ if uploaded_file:
             'Forecasted Values': best_forecast.round(0)
         })
 
-        # Display the 'forecast_output' table in Streamlit (without the index)
-    # Remove index column explicitly by resetting the index
+        # Remove index column explicitly by resetting the index
         forecast_output.reset_index(drop=True, inplace=True)
         st.write("### Forecasted Values:")
         st.dataframe(forecast_output)
